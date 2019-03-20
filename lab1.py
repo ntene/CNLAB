@@ -6,6 +6,11 @@ import select
 import struct
 maxhops = 64
 timeout = 1
+def find_hostname(address):
+	try:
+		return socket.gethostbyaddr(address)[0]
+	except socket.herror:
+		return address
 def checksum_function(string):
 	result = 0
 	length = len(string)
@@ -22,6 +27,9 @@ def checksum_function(string):
 	#print ("*****",hex(result))
 	return result
 
+if len(sys.argv) < 2:
+	print ("sudo python [ip address/host]")
+	exit()
 address = socket.gethostbyname(sys.argv[1])
 current_proto = socket.getprotobyname("ICMP")
 flag = 0
@@ -70,10 +78,14 @@ for ttl in range(1,maxhops):
 	for j in range(3):
 		if ip_address[j] == "*":
 			print ('*', end = " ")
-		elif j != 0 and ip_address[j] == ip_address[j-1]:
+		elif j != 0 and (ip_address[j] == ip_address[j-1] or ip_address[0] == ip_address[2]):
 			print (str(trip_time[j]) + " ms", end = " ")
 		else:
-			print (ip_address[j] + "  " +  str(trip_time[j]) + " ms", end = " ")		
+			if j==0:
+				print (find_hostname(ip_address[j]) + "(" + ip_address[j] + ")   " +  str(trip_time[j]) + " ms", end = " ")
+			else:
+				print("")
+				print (find_hostname(ip_address[j]) + "(" + ip_address[j] + ")   " +  str(trip_time[j]) + " ms", end = " ")		
 	print ("")	
 	if flag:
 		break	
